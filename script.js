@@ -257,7 +257,3 @@ btnLogin.addEventListener('click', function (e) {
 
 // // SET
 // const currenciesUnique = new Set(['USD', 'GBP', 'USD', 'EUR']);
-
-// currenciesUnique.forEach(function (value, key, map) {
-//   console.log(`${key}: ${value}`);
-// });
