@@ -85,8 +85,6 @@ const euroToUSD = 1.1;
 
 const movementsUSD = movements.map(mov => mov * euroToUSD);
 
-console.log(movementsUSD);
-
 const movementsDescriptions = movements.map(
   (mov, i) =>
     `Movements ${i + 1}: You ${mov > 0 ? 'deposited' : 'withdrew'} ${Math.abs(
@@ -112,13 +110,15 @@ const withdrawals = movements.filter(mov => mov < 0);
 
 const balance = movements.reduce((acc, cur) => acc + cur, 0);
 
-const calcPrintBalance = function (movements) {
-  const balance = movements.reduce((acc, cur) => acc + cur, 0);
-  labelBalance.textContent = `${balance}€`;
+const calcPrintBalance = function (acc) {
+  acc.balance = acc.movements.reduce((acc, cur) => acc + cur, 0);
+  labelBalance.textContent = `${acc.balance}€`;
 };
 
 const calcDisplaySummary = function (acc) {
-  const incomes = acc.reduce((acc, mov) => acc + mov, 0);
+  const incomes = acc.movements
+    .filter(mov => mov < 0)
+    .reduce((acc, mov) => acc + mov, 0);
   labelSumIn.textContent = `${incomes}€`;
 
   const outcomes = acc.movements
@@ -131,7 +131,6 @@ const calcDisplaySummary = function (acc) {
     .filter(mov => mov > 0)
     .map(deposit => (deposit * acc.interestRate) / 100)
     .filter((int, i, arr) => {
-      console.log(arr);
       return int >= 1;
     })
     .reduce((acc, int) => acc + int, 0);
@@ -146,6 +145,15 @@ const totalDepositInUSD = movements
 const firstWithdrawal = movements.find(mov => mov < 0);
 
 const account = accounts.find(acc => acc.owner === 'Jessica Davis');
+
+function updateUI(acc) {
+  // Display movements
+  dispalyMovements(acc.movements);
+  //display ballance
+  calcPrintBalance(acc);
+  // Display summary
+  calcDisplaySummary(acc);
+}
 
 // Event handlers
 let currentAcount;
@@ -167,20 +175,47 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
 
-    // Display movements
-    dispalyMovements(currentAcount.movements);
-
-    //display ballance
-    calcPrintBalance(currentAcount.movements);
-    // Display summary
-    calcDisplaySummary(currentAcount);
+    updateUI(currentAcount);
   }
 });
 
 btnTransfer.addEventListener('click', function (e) {
   e.preventDefault();
   const amount = Number(inputTransferAmount.value);
-  const receiverAcc = inputTransferTo.value;
+  const receiverAcc = accounts.find(
+    acc => acc.username === inputTransferTo.value
+  );
+
+  inputTransferAmount.value = inputTransferTo.value = '';
+
+  if (
+    amount > 0 &&
+    receiverAcc &&
+    amount <= currentAcount.balance &&
+    receiverAcc?.username !== currentAcount.username
+  ) {
+    currentAcount.movements.push(-amount);
+    receiverAcc.movements.push(amount);
+
+    updateUI(currentAcount);
+  }
+});
+
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  if (
+    currentAcount.username === inputCloseUsername.value &&
+    currentAcount.pin === Number(inputClosePin.value)
+  ) {
+    const index = accounts.findIndex(
+      acc => acc.username === currentAcount.username
+    );
+    accounts.splice(index, 1);
+
+    containerApp.style.opacity = 0;
+  }
+  inputTransferAmount.value = inputTransferTo.value = '';
 });
 
 // const calcAvgHumanAgeArrow = ages =>
