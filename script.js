@@ -177,6 +177,12 @@ btnLogin.addEventListener('click', function (e) {
   }
 });
 
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const receiverAcc = inputTransferTo.value;
+});
+
 // const calcAvgHumanAgeArrow = ages =>
 //   ages
 //     .map(age => (age <= 2 ? age * 2 : 16 + age * 4))
